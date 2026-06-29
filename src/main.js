@@ -1,13 +1,12 @@
 import iziToast from 'izitoast';
 import 'izitoast/dist/css/iziToast.min.css';
-
-import { getImagesByQuery } from './js/pixabay-api.js';
+import { getImagesByQuery } from '/js/pixabay-api.js';
 import {
   createGallery,
   clearGallery,
   showLoader,
   hideLoader,
-} from './js/render-functions.js';
+} from '/js/render-functions.js';
 
 const searchForm = document.querySelector('.search-form');
 
@@ -27,7 +26,6 @@ searchForm.addEventListener('submit', event => {
   }
 
   clearGallery();
-
   showLoader();
 
   getImagesByQuery(searchQuery)
