@@ -1,63 +1,58 @@
-import { request } from './js/pixabay-api';
-import { createGallery } from './js/render-functions';
-import { clearGallery } from './js/render-functions';
-import { showLoader } from './js/render-functions';
-import { hideLoader } from './js/render-functions';
-
 import iziToast from 'izitoast';
 import 'izitoast/dist/css/iziToast.min.css';
 
-const form = document.querySelector('.form');
+import { getImagesByQuery } from './js/pixabay-api.js';
+import {
+  createGallery,
+  clearGallery,
+  showLoader,
+  hideLoader,
+} from './js/render-functions.js';
 
-form.addEventListener('submit', onSubmitForm);
+const searchForm = document.querySelector('.search-form');
 
-function onSubmitForm(event) {
+searchForm.addEventListener('submit', event => {
   event.preventDefault();
-  const resInput = new FormData(form).get('search-text').trim();
-  if (resInput === '') {
-    iziToast.show({
-      message: 'Please enter a search query!',
-      backgroundColor: `#EF4040`,
-      messageColor: `#ffffff`,
-      position: `topRight`,
-      maxWidth: `432px`,
-    });
 
+  const form = event.currentTarget;
+  const searchQuery = form.elements['search-text'].value.trim();
+
+  if (searchQuery === '') {
+    iziToast.warning({
+      title: 'Warning',
+      message: 'Please enter a search query!',
+      position: 'topRight',
+    });
     return;
   }
 
   clearGallery();
+
   showLoader();
 
-  request(resInput)
-    .then(({ hits }) => {
-      if (!hits || hits.length === 0) {
-        iziToast.show({
+  getImagesByQuery(searchQuery)
+    .then(data => {
+      if (data.hits.length === 0) {
+        iziToast.error({
           message:
-            ' Sorry, there are no images matching your search query. Please try again!',
-          backgroundColor: `#EF4040`,
-          messageColor: `#ffffff`,
-          position: `topRight`,
-          maxWidth: `432px`,
+            'Sorry, there are no images matching your search query. Please try again!',
+          position: 'topRight',
         });
-
         return;
       }
-      createGallery(hits);
+
+      createGallery(data.hits);
     })
     .catch(error => {
-      console.log(error.message);
-      iziToast.show({
-        message:
-          'Sorry, but there was an error processing your request. Please try again.',
-        backgroundColor: `#EF4040`,
-        messageColor: `#ffffff`,
-        position: `topRight`,
-        maxWidth: `432px`,
+      console.error(error);
+      iziToast.error({
+        title: 'Error',
+        message: 'Something went wrong. Please try again later.',
+        position: 'topRight',
       });
     })
     .finally(() => {
       hideLoader();
       form.reset();
     });
-}
+});
